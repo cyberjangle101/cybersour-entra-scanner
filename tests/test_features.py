@@ -189,6 +189,18 @@ def test_html_summary_and_diff_blocks_render_escaped():
     assert "Executive summary" in page and "&lt;b&gt;X&lt;/b&gt;" in page and "<b>X</b>" not in page
 
 
+def test_summary_states_both_pass_rates_with_their_counts():
+    """UAT: a bare "37% of automated CIS checks pass" read as wrong next to the 'passed' card; show what each rate counts."""
+    fs = scan(bad_tenant())
+    sm = pp.summarize(fs, runner.AREAS)
+    verdicts = [f for f in fs if f.status in ("PASS", "FAIL", "WARN")]
+    assert sm["controls_evaluated"] == len(verdicts) and sm["controls_pass"] == sum(f.status == "PASS" for f in fs)
+    assert sm["cis_automated_total"] == sum(1 for f in verdicts if f.cis) and sm["cis_automated_pass"] <= sm["cis_automated_total"]
+    page = report.render_html({}, fs, runner.AREAS, sm)
+    assert f'{sm["cis_automated_pass"]} of {sm["cis_automated_total"]} automated CIS controls pass ({sm["cis_automated_pass_percent"]}%)' in page
+    assert f'{sm["controls_pass"]} of {sm["controls_evaluated"]} evaluated controls pass overall' in page
+
+
 # ------------------------------------------------------------------ batch
 def write(tmp_path, obj, name="b.json"):
     p = tmp_path / name
@@ -309,6 +321,20 @@ def test_gui_filters_summary_and_detail_cap():
     f.evidence = [f"u{i}" for i in range(500)]
     text = gui.finding_detail(f)
     assert "u199" in text and "u200" not in text and "300 more" in text and "Accepted risk by sec" in text
+
+
+def test_gui_progress_counts_check_groups_and_reports_the_outcome():
+    """UAT: the progress bar next to Run scan must end showing complete, partial or failed - not just stop."""
+    from entra_scan import gui
+    logged = []
+    runner.run_scan(context.Ctx(FakeGraph(good_tenant()), Args()), None, log=logged.append)
+    assert sum(gui.is_check_done_line(m) for m in logged) == runner.scan_coverage([])[0]     # one tick per check group
+    assert not gui.is_check_done_line("Scanning Contoso ...") and not gui.is_check_done_line(None)
+    assert gui.run_outcome({"cancelled": False, "meta": {}, "coverage": (33, 0, 100)}) == ("Complete", "green")
+    assert gui.run_outcome({"cancelled": False, "meta": {}, "coverage": (33, 8, 75)})[0] == "Complete - 8 of 33 check groups could not run"
+    assert gui.run_outcome({"cancelled": True, "meta": {}, "coverage": (33, 0, 100)}) == ("Partial - cancelled", "amber")
+    assert gui.run_outcome({"cancelled": False, "meta": {"note": "PARTIAL - maximum runtime"}, "coverage": (33, 0, 100)})[0] == "Partial - stopped early"
+    assert gui.run_outcome(None)[1] == "amber"
 
 
 # ------------------------------------------------------------------ setup script stays in step with the scanner

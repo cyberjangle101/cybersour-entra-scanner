@@ -9,6 +9,21 @@
 | Dependency scanning | **pip-audit** (OSV/PyPI advisories) on the fully pinned tree | 10 packages, 0 known vulnerabilities | `pip-audit.json`, `constraints.txt` |
 | Fuzzing | Custom seeded fuzzer, seed 1337 x 1000 iterations plus 10 further seeds x 300-800 during hardening (`tests/fuzz.py`, `fuzz-report.txt`) | 0 problems. Inputs: Graph API responses (incl. the v1.1 endpoints), policy / accepted-risk / baseline / batch files, federated-token and Key Vault inputs, every CLI flag/value, GUI form values, GUI settings file, credential sources (stdin/file/prompt), helper functions, report/CSV writers | `fuzz-report.txt` |
 
+## Re-run for the 1.1.1 changes (2026-10-24, Windows 11, Python 3.13)
+| Check | Tool | Result |
+|---|---|---|
+| Unit / rule matrix | pytest | 169 passed, 1 skipped |
+| Fuzzing | `tests/fuzz.py 500 20261024` | PROBLEMS: 0 (hostile Graph data still ends some checks as ERROR, the designed outcome) |
+| User acceptance | `tests/uat.py` | 27 of 27 PASS, including UAT-17 and the new UAT-27 (Advanced panel) in the real tkinter window and UAT-18 in real Chromium (Playwright) |
+| Static analysis | Semgrep 1.182.1, `p/python` + `p/security-audit` + `p/secrets` | 0 findings (accepted items carry inline `nosemgrep` with the reason recorded in `semgrep-triage.json`); `tools/sast.py`: no HIGH; the same 9 test-only / accepted MEDIUM items as before plus 3 `subprocess.run` calls in the new developer tool `tools/zap_local.py` (list arguments, no shell; triaged) |
+| Secrets | `tools/secret_scan.py`; Gitleaks 8.30.1; **TruffleHog 3.99.7** (filesystem and full git history) | 0 potential secrets; TruffleHog 0 verified, 0 unverified; Gitleaks false positives reviewed and allowlisted in `.gitleaks.toml` |
+| Dependencies | pip-audit on `constraints.txt` | 0 known vulnerabilities |
+| Dynamic | **OWASP ZAP 2.17.0** + pscanrulesBeta, `tools/zap_local.py` (no Docker; same baseline as `zap.yml`) | 0 alerts outside `.zap/rules.tsv`. With `--no-ignore` it raises exactly the 10 reviewed rules (11 alerts), proving the scan detects them |
+| Not run | stress fuzz (`fuzz.py 2000`) | Skipped: no change to paging, users or evidence handling |
+
+Defect found by UAT-27 and fixed: in the baseline comparison a problem that had only been *waived* (accepted risk) was listed as
+**resolved**; it is now listed separately as "newly accepted risk (not fixed)".
+
 ## Defects found by these activities (and fixed)
 * Conditional Access: a *user-risk* policy that also required MFA wrongly satisfied "MFA for all users" (false PASS). Policies narrowed by risk, platform, location, device filter or client type no longer count.
 * Authorization policy: consent-policy assignment was read from one location only; now both documented locations are read (would have been a false PASS).

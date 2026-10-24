@@ -8,3 +8,6 @@
 10038	IGNORE	(CSP Header Not Set: the report sets its CSP via <meta http-equiv>)
 10055	IGNORE	(CSP: no fallback directive: frame-ancestors is not allowed in a <meta> CSP)
 2	IGNORE	(Private IP Disclosure: the sample tenant's named-location ranges, which are report content)
+10049	IGNORE	(Storable and Cacheable Content: caching headers of the throwaway test server; the report is a local file)
+10063	IGNORE	(Permissions Policy Header Not Set: response header only; cannot be set from a local file)
+90004	IGNORE	(Cross-Origin-Embedder-Policy Header Missing: response header only; the report loads no cross-origin resources)

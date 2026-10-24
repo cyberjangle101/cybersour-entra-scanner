@@ -14,6 +14,17 @@
   false positives in `.gitleaks.toml`; TruffleHog no longer passes `--fail` twice; pip-audit audits `constraints.txt`.
 - CI: Semgrep findings already accepted in `docs/security/semgrep-triage.json` are marked inline with `nosemgrep` so the CI gate
   passes; the ZAP baseline ignores reviewed test-server alerts (`.zap/rules.tsv`) and no longer tries to open issues.
+- Report: "checks run" is now "check groups run" and says how many could not read their data (a group yields several findings,
+  so the old label read as a wrong total). JSON `meta` key renamed from `checks run` to `check groups run`.
+- Report: the CIS pass rate states its counts ("N of M automated CIS controls pass") next to the overall rate over every control
+  with a verdict; `summary` gains `controls_evaluated`, `controls_pass`, `cis_automated_total`, `cis_automated_pass`.
+- Baseline comparison: a problem waived since the baseline is listed as "newly accepted risk", no longer as "resolved"
+  (found in UAT). `diff` gains `accepted`.
+- Desktop window: the progress bar fills per check group and ends with Complete / Partial / Failed instead of just stopping.
+- UAT-27 drives the Advanced panel in the real window with the real pipeline; UAT-17 and UAT-27 run on Windows without xvfb.
+  README documents the Advanced panel and what each report number counts.
+- `tools/zap_local.py` runs the CI's ZAP baseline locally without Docker (portable ZAP + Java); CLAUDE.md gate points at it and at
+  the local TruffleHog.
 
 ## 1.1.0
 - New check groups: break-glass verification (ADM-011..014), hybrid sync (HYB), named locations (NET), Conditional Access quality (CAQ), privileged depth (PRV),

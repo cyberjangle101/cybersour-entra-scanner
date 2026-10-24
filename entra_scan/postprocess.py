@@ -129,11 +129,14 @@ def diff_against(findings, baseline):
     bad = ("FAIL", "WARN")
     now = {f.id: f for f in findings}
     new = [f.id for f in findings if f.status in bad and baseline.get(f.id, {}).get("status") not in bad]
-    resolved = [i for i, b in baseline.items() if b["status"] in bad and i in now and now[i].status not in bad]
+    was_bad = [i for i, b in baseline.items() if b["status"] in bad and i in now]
+    # A problem waived since the baseline is still a problem: report it as accepted, never as resolved.
+    resolved = [i for i in was_bad if now[i].status not in bad and now[i].status != "SUPPRESSED"]
+    accepted = [i for i in was_bad if now[i].status == "SUPPRESSED"]
     changed = [f.id for f in findings if f.status in bad and baseline.get(f.id, {}).get("status") in bad
                and baseline[f.id]["fingerprint"] and baseline[f.id]["fingerprint"] != f.fingerprint]
     gone = [i for i, b in baseline.items() if b["status"] in bad and i not in now]
-    return {"new": sorted(new), "resolved": sorted(resolved), "changed": sorted(changed), "not_run_now": sorted(gone)}
+    return {"new": sorted(new), "resolved": sorted(resolved), "accepted": sorted(accepted), "changed": sorted(changed), "not_run_now": sorted(gone)}
 
 
 # --------------------------------------------------------------------------- score
@@ -168,10 +171,14 @@ def summarize(findings, areas):
     counts = {}
     for f in findings:
         counts[f.status] = counts.get(f.status, 0) + 1
-    cis_auto = [f for f in findings if f.cis and f.status in ("PASS", "FAIL", "WARN")]
+    # Pass rates count only controls with a verdict (PASS / FAIL / WARN); MANUAL, INFO, SKIPPED and accepted risks are left out.
+    evaluated = [f for f in findings if f.status in ("PASS", "FAIL", "WARN")]
+    cis_auto = [f for f in evaluated if f.cis]
     cis_pass = sum(1 for f in cis_auto if f.status == "PASS")
     return {"score": overall, "grade": grade(overall), "areas": per, "counts": counts,
             "top_risks": [{"id": f.id, "title": f.title, "severity": f.severity, "status": f.status} for f in open_[:5]],
+            "controls_evaluated": len(evaluated), "controls_pass": sum(1 for f in evaluated if f.status == "PASS"),
+            "cis_automated_total": len(cis_auto), "cis_automated_pass": cis_pass,
             "cis_automated_pass_percent": round(100 * cis_pass / len(cis_auto)) if cis_auto else None}
 
 
