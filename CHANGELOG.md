@@ -12,6 +12,8 @@
   as NOT RUN (not FAIL) when Playwright is missing.
 - CI: Gitleaks runs from the checksum-verified release binary (the action is outside the allowed-actions policy) with reviewed
   false positives in `.gitleaks.toml`; TruffleHog no longer passes `--fail` twice; pip-audit audits `constraints.txt`.
+- CI: Semgrep findings already accepted in `docs/security/semgrep-triage.json` are marked inline with `nosemgrep` so the CI gate
+  passes; the ZAP baseline ignores reviewed test-server alerts (`.zap/rules.tsv`) and no longer tries to open issues.
 
 ## 1.1.0
 - New check groups: break-glass verification (ADM-011..014), hybrid sync (HYB), named locations (NET), Conditional Access quality (CAQ), privileged depth (PRV),

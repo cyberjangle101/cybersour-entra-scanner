@@ -11,4 +11,6 @@ jobs:
       - run: pip install -r requirements.txt && python tools/make_sample_report.py site
       - run: (cd site && python -m http.server 8000 &) ; sleep 2
       - uses: zaproxy/action-baseline@de8ad967d3548d44ef623df22cf95c3b0baf8b25 # v0.15.0
-        with: { target: "http://localhost:8000/index.html", fail_action: true }
+        # Reviewed, harness-only alerts are ignored in .zap/rules.tsv. The workflow token is read-only, so the
+        # action must not try to open an issue (that call fails with "Resource not accessible by integration").
+        with: { target: "http://localhost:8000/index.html", fail_action: true, rules_file_name: ".zap/rules.tsv", allow_issue_writing: false }

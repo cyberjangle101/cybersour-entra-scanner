@@ -1,7 +1,7 @@
 """v1.1 features: clouds, federated / managed-identity / Key Vault sign-in, time budgets, SARIF, JUnit, batch, CLI wiring."""
 import json
 import os
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ET  # nosemgrep: use-defused-xml  (parses only XML this tool just generated)
 from argparse import Namespace
 
 import pytest

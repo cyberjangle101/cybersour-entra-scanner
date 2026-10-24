@@ -6,7 +6,7 @@ Both carry the COMPLETE evidence list of every finding. Values come from the ten
 from __future__ import annotations
 
 import json
-import xml.etree.ElementTree as ET     # nosec - used only to BUILD XML, never to parse untrusted input
+import xml.etree.ElementTree as ET     # nosec nosemgrep: use-defused-xml  (used only to BUILD XML, never to parse untrusted input)
 
 from . import __version__
 
