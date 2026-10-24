@@ -1,0 +1,18 @@
+# Gitleaks: the default rules, minus reviewed false positives (none of these is a credential).
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Scanner evidence files that store hashes and commit SHAs, not secrets"
+paths = [
+  '''^docs/security/scan-ds\.json$''',       # detect-secrets baseline: SHA-1 hashes of candidate strings
+  '''^docs/security/trufflehog3\.json$''',   # TruffleHog report: the flagged strings are pinned action commit SHAs
+]
+
+[[allowlists]]
+description = "Microsoft's published Entra ID role template IDs (identical in every tenant)"
+regexes = [
+  '''b1be1c3e-b65d-4f19-8427-f6fa0d97feb9''',   # Conditional Access Administrator
+  '''966707d0-3269-4727-9be2-8c3a10f19b9d''',   # Password Administrator
+  '''10dae51f-b6af-4016-8d66-8c2a99b929b3''',   # Guest user (limited access)
+]

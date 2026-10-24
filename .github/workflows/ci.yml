@@ -12,6 +12,6 @@ jobs:
       - run: python -m pytest tests -q
       - run: python tests/fuzz.py 500 1
       - name: Dependency scan
-        run: pip-audit -r requirements.txt -c constraints.txt
+        run: pip-audit -r constraints.txt        # the fully pinned tree (pip-audit has no -c option)
       - name: Semgrep (static analysis)
         run: semgrep scan --config p/python --config p/security-audit --error --metrics=off .

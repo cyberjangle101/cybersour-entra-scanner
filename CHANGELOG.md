@@ -10,6 +10,8 @@
   `isatty()` True, so the CLI now also requires a real console (`GetConsoleMode`) before prompting.
 - Tests: file-mode (600) assertions apply on POSIX only; `tests/uat.py` no longer reads the real console and reports the browser run
   as NOT RUN (not FAIL) when Playwright is missing.
+- CI: Gitleaks runs from the checksum-verified release binary (the action is outside the allowed-actions policy) with reviewed
+  false positives in `.gitleaks.toml`; TruffleHog no longer passes `--fail` twice; pip-audit audits `constraints.txt`.
 
 ## 1.1.0
 - New check groups: break-glass verification (ADM-011..014), hybrid sync (HYB), named locations (NET), Conditional Access quality (CAQ), privileged depth (PRV),
