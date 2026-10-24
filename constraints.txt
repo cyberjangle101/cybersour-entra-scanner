@@ -1,0 +1,11 @@
+# Fully pinned dependency tree (pip-audit clean on 2026-10-24). Install: pip install -r requirements.txt -c constraints.txt
+certifi==2026.10.23
+cffi==2.1.1
+charset-normalizer==3.5.2
+cryptography==50.0.2
+idna==3.20
+msal==1.39.0
+pycparser==3.12
+pyjwt==2.15.1
+requests==2.34.2
+urllib3==2.8.0

@@ -1,0 +1,31 @@
+Rule home.claude.sast.semgrep-rules.yaml.github-actions.security.audit.third-party-action-not-pinned-to-commit-sha contains an include pattern '.github/workflows' that will soon be interpreted as '/.github/workflows' to comply with the Semgrepignore v2 and Gitignore specifications. To make this pattern permanently unanchored, edit rule home.claude.sast.semgrep-rules.yaml.github-actions.security.audit.third-party-action-not-pinned-to-commit-sha and change it to '**/.github/workflows'. To confirm the anchored behavior and avoid this warning, change it to '/.github/workflows'.
+               
+               
+┌─────────────┐
+│ Scan Status │
+└─────────────┘
+  Scanning 70 files tracked by git with 966 Code rules:
+                                                                                                                        
+  Language      Rules   Files          Origin   Rules                                                                   
+ ─────────────────────────────        ────────────────                                                                  
+  <multilang>     233      70          Custom     966                                                                   
+  python          370      46                                                                                           
+  yaml             94       3                                                                                           
+  js              171       1                                                                                           
+                                                                                                                        
+Rule home.claude.sast.semgrep-rules.yaml.github-actions.security.audit.third-party-action-not-pinned-to-commit-sha contains an include pattern '.github/workflows' that will soon be interpreted as '/.github/workflows' to comply with the Semgrepignore v2 and Gitignore specifications. To make this pattern permanently unanchored, edit rule home.claude.sast.semgrep-rules.yaml.github-actions.security.audit.third-party-action-not-pinned-to-commit-sha and change it to '**/.github/workflows'. To confirm the anchored behavior and avoid this warning, change it to '/.github/workflows'.
+                
+                
+┌──────────────┐
+│ Scan Summary │
+└──────────────┘
+✅ Scan completed successfully.
+ • Findings: 94 (94 blocking)
+ • Rules run: 866
+ • Targets scanned: 70
+ • Parsed lines: ~100.0%
+ • Scan skipped: 
+   ◦ Files matching .semgrepignore patterns: 12
+ • For a detailed list of skipped files and lines, run semgrep with the --verbose flag
+Ran 866 rules on 70 files: 94 findings.
+exit 0

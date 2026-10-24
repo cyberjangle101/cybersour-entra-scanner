@@ -1,0 +1,11 @@
+__pycache__/
+reports/
+*.pem
+*.key
+.env
+.venv/
+.buildenv/
+.pytest_cache/
+build/
+dist/
+*.spec

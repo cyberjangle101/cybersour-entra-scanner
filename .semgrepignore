@@ -1,0 +1,4 @@
+# Deliberately minimal: scan tests/, tools/ and everything else too (semgrep's default ignore list skips tests/).
+__pycache__/
+docs/security/
+docs/screenshots/

@@ -1,0 +1,17 @@
+name: ci
+on: [push, pull_request]
+permissions: { contents: read }
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with: { python-version: "3.12" }
+      - run: pip install -r requirements.txt pytest pip-audit semgrep
+      - run: python -m pytest tests -q
+      - run: python tests/fuzz.py 500 1
+      - name: Dependency scan
+        run: pip-audit -r requirements.txt -c constraints.txt
+      - name: Semgrep (static analysis)
+        run: semgrep scan --config p/python --config p/security-audit --error --metrics=off .

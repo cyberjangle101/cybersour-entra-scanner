@@ -1,0 +1,25 @@
+name: build-windows-exe
+on:
+  workflow_dispatch: {}
+  push:
+    tags: ["v*"]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements.txt pyinstaller
+      - run: pyinstaller --noconfirm --clean --onefile --noconsole --name EntraPostureScanner-GUI --collect-submodules entra_scan --collect-data certifi entra_posture_gui.py
+      - run: pyinstaller --noconfirm --onefile --name EntraPostureScanner-CLI --collect-submodules entra_scan --collect-data certifi entra_posture_scan.py
+      - run: dist\EntraPostureScanner-CLI.exe --version
+      - run: dist\EntraPostureScanner-CLI.exe --list-permissions
+      # Pin this to a commit SHA like the other actions once you have confirmed the one you trust.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EntraPostureScanner-windows
+          path: dist/*.exe
