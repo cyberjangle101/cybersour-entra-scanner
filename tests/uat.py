@@ -337,7 +337,9 @@ def external(sid, title, expect, argv, need, modules=()):
 
 
 gui = external("UAT-17", "Desktop window, real tkinter, driven like a user", "validation, scan, filters, detail, CSV, no secret saved, cancel, error dialog",
-               ["xvfb-run", "-a", "/usr/bin/python3.12", os.path.join(HERE, "uat_gui.py")], ["xvfb-run", "/usr/bin/python3.12"])
+               [sys.executable, os.path.join(HERE, "uat_gui.py")] if os.name == "nt"      # Windows has a desktop: no virtual display needed
+               else ["xvfb-run", "-a", "/usr/bin/python3.12", os.path.join(HERE, "uat_gui.py")],
+               [] if os.name == "nt" else ["xvfb-run", "/usr/bin/python3.12"], modules=["tkinter"])
 if gui is not None:
     t0 = time.time()
     try:
@@ -349,6 +351,15 @@ if gui is not None:
                         "PASS", gui["summary"], time.time() - t0))
     except AssertionError as e:
         RESULTS.append(("UAT-17", "Desktop window", "", "FAIL", f"{e} {gui}", 0))
+
+ADV = ("UAT-27", "Desktop window: Advanced panel (network, decisions, extra outputs)",
+       "each field validated before sign-in; proxy/CA reach Graph; policy, accepted risk, baseline, time limit, SARIF/JUnit take effect")
+adv_cmd = [sys.executable, os.path.join(HERE, "uat_gui_advanced.py")]
+adv = external(*ADV, adv_cmd if os.name == "nt" else ["xvfb-run", "-a", *adv_cmd], [] if os.name == "nt" else ["xvfb-run"], modules=["tkinter"])
+if adv is not None:
+    failed = sorted(k for k, v in adv.items() if v is False)
+    RESULTS.append((*ADV, "FAIL" if failed else "PASS",
+                    f"false: {failed}" if failed else f"{sum(v is True for v in adv.values())} checks true; {adv.get('run2_state')}; {adv.get('bad_policy_message')}", 0))
 
 shots = os.path.join(ROOT, "docs", "screenshots"); os.makedirs(shots, exist_ok=True)
 br = external("UAT-18", "HTML report in a real browser", "filters, deep links, keyboard, mobile layout, hostile data inert, CSP holds",

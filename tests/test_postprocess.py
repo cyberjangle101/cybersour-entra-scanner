@@ -72,7 +72,18 @@ def test_diff_new_resolved_changed(tmp_path):
     d = pp.diff_against(new, pp.load_baseline(base))
     assert d["resolved"] and not d["new"]
     d2 = pp.diff_against(old, pp.load_baseline(base))
-    assert d2 == {"new": [], "resolved": [], "changed": [], "not_run_now": []}
+    assert d2 == {"new": [], "resolved": [], "accepted": [], "changed": [], "not_run_now": []}
+
+
+def test_diff_waived_problem_is_accepted_not_resolved(tmp_path):
+    """UAT finding: a problem waived since the baseline was listed as 'resolved'; it is still there, only accepted."""
+    old = findings(bad_tenant())
+    base = write(tmp_path, "b.json", {"findings": [{"id": f.id, "status": f.status, "title": f.title} for f in old]})
+    new = findings(bad_tenant())
+    pp.apply_suppressions(new, pp.load_suppressions(write(tmp_path, "s.json", [dict(id="ADM-001", owner="o", reason="r", expires="2099-01-01")])),
+                          dt.date(2026, 10, 24))
+    d = pp.diff_against(new, pp.load_baseline(base))
+    assert d["accepted"] == ["ADM-001"] and "ADM-001" not in d["resolved"]
 
 
 def test_score_orders_good_above_bad_and_ignores_suppressed():

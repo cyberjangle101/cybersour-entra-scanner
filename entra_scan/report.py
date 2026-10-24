@@ -104,14 +104,22 @@ def _summary_html(summary, diff, esc):
     risks = "".join(f'<li><span class="tag {esc(r["severity"])}">{esc(r["severity"])}</span> {esc(r["title"])} <code>{esc(r["id"])}</code></li>'
                     for r in summary["top_risks"]) or "<li>No open risks.</li>"
     cis = summary.get("cis_automated_pass_percent")
+    # Spell out both fractions: a bare "37% of CIS checks" reads as wrong next to the "passed" card, which counts every control.
+    rates = ""
+    if cis is not None:
+        rates += f'; {summary.get("cis_automated_pass", "?")} of {summary.get("cis_automated_total", "?")} automated CIS controls pass ({cis}%)'
+    if summary.get("controls_evaluated"):
+        rates += (f'; {summary["controls_pass"]} of {summary["controls_evaluated"]} evaluated controls pass overall '
+                  "(manual, informational and skipped items are not counted)")
     html_ = (f'<section class="sum"><h2>Executive summary</h2><div class="score"><b class="bigscore">{summary["score"] if summary["score"] is not None else "n/a"}</b>'
              f'<span class="g g{esc(summary["grade"])}">{esc(summary["grade"])}</span><span class="mut">weighted posture score (0-100)'
-             + (f"; {cis}% of automated CIS checks pass" if cis is not None else "") + '</span></div>'
+             + esc(rates) + '</span></div>'
              f'<table class="areas"><thead><tr><th>Area</th><th>Score</th><th>Grade</th></tr></thead><tbody>{areas}</tbody></table>'
              f'<h3>Top risks</h3><ol class="risks">{risks}</ol>')
     if diff is not None:
         li = lambda ids: "".join(f"<code>{esc(i)}</code> " for i in ids) or "none"
         html_ += (f'<h3>Change since baseline</h3><ul><li><b>New problems:</b> {li(diff["new"])}</li><li><b>Resolved:</b> {li(diff["resolved"])}</li>'
+                  f'<li><b>Newly accepted risk (not fixed):</b> {li(diff.get("accepted", []))}</li>'
                   f'<li><b>Changed affected objects:</b> {li(diff["changed"])}</li><li><b>No longer run:</b> {li(diff["not_run_now"])}</li></ul>')
     return html_ + "</section>"
 

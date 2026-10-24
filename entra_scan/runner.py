@@ -146,7 +146,10 @@ def execute_scan(args, log=print, stop=None):
     areas = list(getattr(args, "areas", None) or []) or None
     findings = run_scan(ctx, areas, log, stop)
     selected, not_run, pct = scan_coverage(findings, areas)
-    meta["checks run"] = f"{selected - not_run} of {selected} ({pct}%)"
+    # A check group is one check function; each produces several findings (the controls listed in the report), so this
+    # number is much smaller than the number of findings and must not be labelled "checks".
+    meta["check groups run"] = (f"{selected - not_run} of {selected} ({pct}%)"
+                                + (f"; {not_run} could not read their data (see Skipped / errors)" if not_run else ""))
     meta["graph requests"] = graph.calls
     cancelled = bool(stop is not None and stop.is_set())
     if cancelled:

@@ -59,11 +59,37 @@ Exit codes: 0 ok, 1 gate failed, 2 settings problem, 3 unexpected error.
 - `--batch tenants.json` scans many tenants and writes `combined-*.html`; the file may reference credentials (`client_secret_file`, `cert_path`, `federated_token_file`, `keyvault_secret`) but **never contains secret values**:
   `{"tenants": [{"name": "contoso", "tenant": "contoso.com", "client_id": "<guid>", "client_secret_file": "/secure/contoso.txt"}], "defaults": {"cloud": "commercial"}}`
 
+**Desktop window: the "Advanced: network, decisions, extra outputs" panel.** All fields are optional; leave them empty for a normal scan.
+Each one is the same as a command-line option above and is checked when you press *Run scan*, before anything signs in (a wrong path,
+a bad proxy address or a malformed file gives a message and nothing starts).
+
+| Field | Same as | What it does |
+|---|---|---|
+| Proxy URL | `--proxy` | Send all Microsoft sign-in and Graph traffic through this proxy. Must start with `http://` or `https://`. |
+| CA bundle | `--ca-bundle` | A PEM file of extra trusted root certificates, for networks that inspect TLS. |
+| Policy file | `--policy` | Your organisation's decisions: turn checks off (`disable`) or change their severity (`severity`). Shown in the report header. |
+| Accepted-risk file | `--suppressions` | Risks you have accepted, each with owner, reason and expiry. They show as **SUPPRESSED**, are left out of the score, and come back when the waiver expires. |
+| Compare with report | `--baseline` | An earlier JSON report from this tool. The new report lists what is new, resolved (actually fixed), newly accepted risk (waived, not fixed) and changed. |
+| Seconds per check (0=off) | `--check-timeout` | A check group that takes longer is stopped and reported **SKIPPED**, never PASS. |
+| Also write SARIF / JUnit XML | `--sarif` / `--junit` | Extra files for code-scanning dashboards and CI test reports, next to the HTML and JSON. |
+
+The progress bar fills as each check group finishes and ends with **Complete**, **Complete - N check groups could not run**
+(look at *Skipped / errors* for the missing permission or licence), **Partial** (cancelled or stopped early) or **Failed** (see the log).
+
 **Windows .exe** (`EntraPostureScanner-GUI.exe` = window, `EntraPostureScanner-CLI.exe` = command line): run `build_exe.bat` on a Windows PC with Python installed (it builds in a clean virtual environment and prints any error), or push the repo to GitHub and run the *build-windows-exe* workflow, then download the `EntraPostureScanner-windows` artifact.
 
 ## 3. Reading the report
 Statuses: PASS, WARN, FAIL, INFO, **MANUAL** (cannot be read via Graph; do it by hand), **SUPPRESSED** (accepted risk with owner and expiry), SKIPPED / ERROR (could not run). Click a severity card, area or status button to filter.
 The **score** (0-100, letter grade) is a weighted share of failed risk: critical 10, high 6, medium 3, low 1; WARN counts half; passed controls count at the weight they would carry if they failed. It is a trend indicator, not a compliance rating.
+
+What the numbers count:
+- **Check groups run: 25 of 33** - the scanner has 33 check groups (one per area of settings it reads). Each group produces several
+  findings, which is why the report lists far more than 33 items. A group that cannot read its data (missing permission or licence)
+  appears under *Skipped / errors*; it is never counted as passed.
+- **N of M automated CIS controls pass** - only findings that map to a CIS Microsoft 365 benchmark item *and* got a verdict
+  (PASS, FAIL or WARN). MANUAL items, informational findings and findings without a CIS reference are not in this number.
+- **N of M evaluated controls pass overall** - every finding with a verdict, CIS-mapped or not. This is the same PASS count as the
+  *passed* card; the card total also includes MANUAL, INFO and skipped items, which have no verdict.
 The page shows the first 25 affected objects of each finding; JSON, CSV, SARIF and JUnit carry all of them. Each finding also lists indicative NIST 800-53 and ISO 27001 references (evidence for the control, not proof of compliance), and failing items carry guidance snippets that are text only and never run by the tool.
 
 ## 4. Safety

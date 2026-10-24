@@ -123,7 +123,8 @@ def main(argv=None):
           f"Score {sm['score']} ({sm['grade']}). Coverage {result['coverage'][2]}%.\nReport: {result['html_path']}")
     if result["diff"] is not None:
         d = result["diff"]
-        print(f"Since baseline: {len(d['new'])} new, {len(d['resolved'])} resolved, {len(d['changed'])} changed.")
+        print(f"Since baseline: {len(d['new'])} new, {len(d['resolved'])} resolved, {len(d['accepted'])} newly accepted risk, "
+              f"{len(d['changed'])} changed.")
     if args.min_coverage and result["coverage"][2] < args.min_coverage:
         print(f"Coverage {result['coverage'][2]}% is below --min-coverage {args.min_coverage}%.", file=sys.stderr)
         return 1

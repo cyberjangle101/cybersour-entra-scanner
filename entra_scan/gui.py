@@ -128,6 +128,25 @@ def summarize(findings) -> str:
             + f"  |  Skipped/errors: {sum(x.status in ('SKIPPED', 'ERROR') for x in findings)}")
 
 
+def is_check_done_line(text) -> bool:
+    """True for the line runner.run_scan logs when one check group finishes ("  [area] title ... ok (...)"); drives the progress bar."""
+    return isinstance(text, str) and text.startswith("  [") and "] " in text and " ... " in text
+
+
+def run_outcome(res) -> tuple[str, str]:
+    """(label, colour) shown next to the progress bar when a scan ends: green when every check group ran, amber otherwise."""
+    if not isinstance(res, dict):
+        return "Finished", "amber"
+    if res.get("cancelled"):
+        return "Partial - cancelled", "amber"
+    if str((res.get("meta") or {}).get("note") or "").startswith("PARTIAL"):
+        return "Partial - stopped early", "amber"
+    coverage = res.get("coverage")
+    if isinstance(coverage, (tuple, list)) and len(coverage) == 3 and coverage[1]:
+        return f"Complete - {coverage[1]} of {coverage[0]} check groups could not run", "amber"
+    return "Complete", "green"
+
+
 def finding_detail(x) -> str:
     """Plain-text detail pane for one finding."""
     lines = [x.title, f"{x.id}  -  {x.status}" + (f"  -  {x.severity}" if x.status in ("FAIL", "WARN") else ""), ""]
@@ -178,7 +197,7 @@ def run_gui():
     from tkinter.scrolledtext import ScrolledText
 
     from . import permissions
-    from .runner import AREAS, execute_scan
+    from .runner import AREAS, execute_scan, scan_coverage
 
     try:                                       # crisp text on high-DPI Windows screens
         import ctypes
@@ -296,8 +315,10 @@ def run_gui():
             self.run_btn.pack(side="left")
             self.cancel_btn = ttk.Button(bar, text="Cancel", command=self._cancel, state="disabled")
             self.cancel_btn.pack(side="left", padx=6)
-            self.prog = ttk.Progressbar(bar, mode="indeterminate", length=160)
-            self.prog.pack(side="left", padx=10)
+            self.prog = ttk.Progressbar(bar, mode="determinate", length=160, maximum=1)
+            self.prog.pack(side="left", padx=(10, 4))
+            self.prog_state = ttk.Label(bar, text="")      # Running / Complete / Partial / Failed once a scan has started
+            self.prog_state.pack(side="left")
             self.report_btn = ttk.Button(bar, text="Open HTML report", command=self._open_report, state="disabled")
             self.report_btn.pack(side="right")
             self.csv_btn = ttk.Button(bar, text="Export CSV...", command=self._export_csv, state="disabled")
@@ -371,6 +392,8 @@ def run_gui():
                 self.v["output_dir"].set(p)
 
         def _logline(self, text):
+            if is_check_done_line(text):
+                self.prog.configure(value=min(float(self.prog["value"]) + 1, float(self.prog["maximum"])))
             self.log.configure(state="normal")
             self.log.insert("end", text + "\n")
             self.log.see("end")
@@ -438,7 +461,8 @@ def run_gui():
                 b.configure(state="disabled")
             self.summary.configure(text="Scanning...")
             self.status.configure(text="Scanning - this can take a few minutes on large tenants")
-            self.prog.start(12)
+            self.prog.configure(maximum=max(scan_coverage([], args.areas)[0], 1), value=0)
+            self._set_state("Running...", "")
             threading.Thread(target=self._work, args=(args,), daemon=True).start()
 
         def _work(self, args):
@@ -471,6 +495,9 @@ def run_gui():
             score = f"Score: {sm['score']} ({sm['grade']})  |  " if sm.get("score") is not None else ""
             self.summary.configure(text=score + summarize(self.findings) + ("   (partial - cancelled)" if res["cancelled"] else ""))
             self.status.configure(text=f"Done. Reports saved to {res['html_path'].parent}")
+            if not res["cancelled"]:
+                self.prog.configure(value=self.prog["maximum"])
+            self._set_state(*run_outcome(res))
             for b in (self.report_btn, self.csv_btn, self.folder_btn):
                 b.configure(state="normal")
             self.nb.select(0)
@@ -480,11 +507,16 @@ def run_gui():
             self._end_run()
             self.summary.configure(text="Scan failed.")
             self.status.configure(text="Scan failed")
+            self._set_state("Failed", "red")
             self._logline("ERROR: " + msg)
             messagebox.showerror("Scan failed", msg)
 
+        def _set_state(self, text, colour):
+            """Outcome text beside the progress bar; colour is green / amber / red, or "" for neutral."""
+            fg = {"green": "#1a7f37", "amber": "#9a6700", "red": "#cf222e"}.get(colour, "")
+            self.prog_state.configure(text=("✔ " if colour == "green" else "✖ " if colour == "red" else "") + text, foreground=fg)
+
         def _end_run(self):
-            self.prog.stop()
             self.run_btn.configure(state="normal")
             self.cancel_btn.configure(state="disabled")
 
