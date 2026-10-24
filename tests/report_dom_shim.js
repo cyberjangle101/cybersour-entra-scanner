@@ -40,7 +40,7 @@ global.document = { querySelectorAll: (s) => { if (!(s in sel)) throw new Error(
 global.location = { hash, pathname: "/r.html", search: "" };
 global.window = { addEventListener() {} };
 global.history = { replaceState: (_a, _b, u) => { global.__url = u; } };
-const script = html.slice(html.indexOf(">", html.lastIndexOf("<script")) + 1, html.lastIndexOf("</script>"));
+const script = html.slice(html.indexOf(">", html.lastIndexOf("<script")) + 1, html.lastIndexOf("</script>"));  // nosemgrep: unknown-value-with-script-tag  (test shim reading our own generated report, not browser code)
 eval(script);
 const visible = () => items.filter((i) => !i.hidden).map((i) => i.dataset.cat + ":" + i.dataset.st + ":" + (i.dataset.sev || "-"));
 const out = { initial: { visible: visible(), count: countEl.textContent } };

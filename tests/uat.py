@@ -195,7 +195,7 @@ def _():
 
 
 # ------------------------------------------------------------------ v1.1 scenarios
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ET  # nosemgrep: use-defused-xml  (parses only XML this tool just generated)
 
 
 def write_json(obj):
@@ -259,7 +259,7 @@ def _():
     names = sorted(x.split(".", 1)[1] for x in os.listdir(d))
     assert names == ["csv", "html", "json", "junit.xml", "sarif"], names
     sarif = json.load(open([os.path.join(d, x) for x in os.listdir(d) if x.endswith(".sarif")][0]))
-    root = ET.parse([os.path.join(d, x) for x in os.listdir(d) if x.endswith(".junit.xml")][0]).getroot()
+    root = ET.parse([os.path.join(d, x) for x in os.listdir(d) if x.endswith(".junit.xml")][0]).getroot()  # nosemgrep: use-defused-xml-parse  (our own output)
     assert sarif["version"] == "2.1.0" and sarif["runs"][0]["results"] and root.findall(".//failure")
     return f"{len(sarif['runs'][0]['results'])} SARIF results, {len(root.findall('.//failure'))} JUnit failures"
 

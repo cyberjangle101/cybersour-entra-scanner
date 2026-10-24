@@ -1,0 +1,10 @@
+# ZAP baseline rules for the sample report served by 'python -m http.server' in zap.yml.
+# The real report is a local HTML file: no web server sends its headers, and its CSP is set in a <meta> tag
+# (default-src 'none', nonce-only script/style). Header-only protections cannot be expressed there.
+10020	IGNORE	(Missing Anti-clickjacking Header: needs a response header or frame-ancestors, which browsers ignore in <meta> CSP)
+10021	IGNORE	(X-Content-Type-Options Header Missing: response header from the throwaway test server)
+10027	IGNORE	(Information Disclosure - Suspicious Comments: words in the report's own filter script)
+10036	IGNORE	(Server Leaks Version Information: Python http.server banner, test harness only)
+10038	IGNORE	(CSP Header Not Set: the report sets its CSP via <meta http-equiv>)
+10055	IGNORE	(CSP: no fallback directive: frame-ancestors is not allowed in a <meta> CSP)
+2	IGNORE	(Private IP Disclosure: the sample tenant's named-location ranges, which are report content)
