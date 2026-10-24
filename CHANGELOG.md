@@ -23,6 +23,8 @@
 - Desktop window: the progress bar fills per check group and ends with Complete / Partial / Failed instead of just stopping.
 - UAT-27 drives the Advanced panel in the real window with the real pipeline; UAT-17 and UAT-27 run on Windows without xvfb.
   README documents the Advanced panel and what each report number counts.
+- `tools/zap_local.py` runs the CI's ZAP baseline locally without Docker (portable ZAP + Java); CLAUDE.md gate points at it and at
+  the local TruffleHog.
 
 ## 1.1.0
 - New check groups: break-glass verification (ADM-011..014), hybrid sync (HYB), named locations (NET), Conditional Access quality (CAQ), privileged depth (PRV),

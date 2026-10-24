@@ -98,3 +98,7 @@ nonce-based Content-Security-Policy. See `SECURITY.md`. Not covered: Exchange, S
 
 ## 5. Development
 `python -m pytest tests` runs unit, rule-matrix, CLI, report, GUI-logic and fuzz tests. `python tools/gen_docs.py` regenerates `docs/`.
+`python tests/uat.py` runs the user-acceptance scenarios (GUI ones need tkinter; the browser one needs Playwright + Chromium).
+`python tools/zap_local.py` runs the same OWASP ZAP baseline as CI without Docker; it needs ZAP 2.17 (cross-platform zip) and a Java 17+
+runtime, by default in `%LOCALAPPDATA%\Programs\zap\ZAP_2.17.0` and `%LOCALAPPDATA%\Programs\temurin-jre-21` (or `--zap-home` / `--java`).
+The full pre-merge checklist is in `CLAUDE.md`.
